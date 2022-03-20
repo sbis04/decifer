@@ -11,7 +11,7 @@ class Helper {
     await controller.initial();
     final subtitles = controller.subtitles;
 
-    // printResult(subtitles);
+    printResult(subtitles);
     return subtitles;
   }
 

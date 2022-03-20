@@ -43,6 +43,7 @@ dependencies:
   file_picker: ^4.5.1
   cloud_firestore: ^3.1.10
   firebase_storage: ^10.2.9
+  audioplayers: ^0.20.1
 
 dev_dependencies:
   flutter_test:

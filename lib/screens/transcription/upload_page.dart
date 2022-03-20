@@ -86,6 +86,8 @@ class _UploadPageState extends State<UploadPage> {
                     child: WaveVisualizer(
                       columnHeight: 50,
                       columnWidth: 10,
+                      isPaused: false,
+                      isBarVisible: false,
                     ),
                   )
                 : SizedBox(

@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:deepgram_transcribe/res/custom_colors.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -22,21 +25,106 @@ class TranscriptionPage extends StatefulWidget {
 class _TranscriptionPageState extends State<TranscriptionPage> {
   // late final String _entireString;
   late final List<Subtitle> _subtitles;
-  late final List<TextSpan> _subtitleTextSpan;
+  late List<TextSpan> _subtitleTextSpan;
+  late final PlatformFile _audioFile;
+  late final AudioPlayer _audioPlayer;
+
+  Duration? _totalDuration;
+  Duration? _currentDuration;
+  double _fraction = 0.0;
+
+  PlayerState _playerState = PlayerState.COMPLETED;
+
+  startAudioPlayback() async {
+    final something = await _audioPlayer.play(
+      _audioFile.path!,
+      isLocal: true,
+      stayAwake: true,
+    );
+
+    log('Status code: $something');
+  }
 
   @override
   void initState() {
     _subtitles = widget.subtitles;
+    _audioFile = widget.audioFile;
+    _audioPlayer = AudioPlayer();
+    _audioPlayer.onAudioPositionChanged.listen((Duration d) {
+      log('Current duration: $d');
+      _currentDuration = d;
 
-    _subtitleTextSpan = List.generate(_subtitles.length, (index) {
-      if (index == 0) {
-        return TextSpan(text: _subtitles[index].data.substring(2));
-      } else {
-        return TextSpan(text: _subtitles[index].data.substring(1));
+      _subtitleTextSpan = generateTextSpans(_subtitles, currentDuration: d);
+
+      if (_totalDuration != null) {
+        _fraction = d.inSeconds / _totalDuration!.inSeconds;
       }
-    }).toList();
+      setState(() {});
+    });
+    _audioPlayer.onDurationChanged.listen((Duration d) {
+      log('Max duration: $d');
+      setState(() {
+        _totalDuration = d;
+      });
+    });
+    _audioPlayer.onPlayerStateChanged.listen((PlayerState s) {
+      log('Current player state: $s');
+
+      setState(() {
+        _playerState = s;
+      });
+    });
+
+    _subtitleTextSpan = generateTextSpans(_subtitles);
 
     super.initState();
+  }
+
+  generateTextSpans(
+    List<Subtitle> subtitles, {
+    Duration? currentDuration,
+  }) {
+    return List.generate(subtitles.length, (index) {
+      final startDuration = subtitles[index].start;
+      final endDuration = subtitles[index].end;
+
+      bool shouldHighlight = false;
+
+      if (currentDuration != null) {
+        if (currentDuration.compareTo(startDuration) >= 0 &&
+            currentDuration.compareTo(endDuration) <= 0) {
+          shouldHighlight = true;
+        }
+      }
+
+      log('HIGHLIGHT: $shouldHighlight');
+
+      if (index == 0) {
+        return TextSpan(
+          text: subtitles[index].data.substring(2),
+          style: shouldHighlight
+              ? const TextStyle(
+                  color: CustomColors.black,
+                )
+              : null,
+        );
+      } else {
+        return TextSpan(
+          text: subtitles[index].data.substring(1),
+          style: shouldHighlight
+              ? const TextStyle(
+                  color: CustomColors.black,
+                )
+              : null,
+        );
+      }
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,9 +161,11 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                   const SizedBox(height: 16),
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
-                        color: CustomColors.black,
+                        color: _playerState == PlayerState.PLAYING
+                            ? CustomColors.black.withOpacity(0.2)
+                            : CustomColors.black,
                       ),
                       children: _subtitleTextSpan,
                     ),
@@ -105,26 +195,73 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                         child: WaveVisualizer(
                           columnHeight: 50,
                           columnWidth: 10,
+                          isPaused: _playerState == PlayerState.PLAYING
+                              ? false
+                              : true,
+                          widthFactor: _fraction,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      InkWell(
-                        onTap: () {},
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.black26,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(
-                              Icons.play_arrow_rounded,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      )
+                      _playerState == PlayerState.COMPLETED ||
+                              _playerState == PlayerState.STOPPED
+                          ? InkWell(
+                              onTap: () async {
+                                await startAudioPlayback();
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.black26,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    Icons.play_arrow_rounded,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _playerState == PlayerState.PAUSED
+                              ? InkWell(
+                                  onTap: () async {
+                                    await _audioPlayer.resume();
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black26,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.play_arrow_rounded,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : InkWell(
+                                  onTap: () async {
+                                    await _audioPlayer.pause();
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black26,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.pause_outlined,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
                     ],
                   ),
                 ),
