@@ -9,6 +9,7 @@ class WaveVisualizer extends StatelessWidget {
     this.isPaused = true,
     this.widthFactor = 1,
     this.isBarVisible = true,
+    this.color = CustomColors.black,
   }) : super(key: key);
 
   final double columnHeight;
@@ -16,6 +17,7 @@ class WaveVisualizer extends StatelessWidget {
   final bool isPaused;
   final double widthFactor;
   final bool isBarVisible;
+  final Color color;
 
   final List<int> duration = [900, 700, 600, 800, 500];
 
@@ -44,8 +46,8 @@ class WaveVisualizer extends StatelessWidget {
                     duration: duration[index % 5],
                     initialHeight: isPaused ? initialHeight[index % 5] : null,
                     color: index % 2 == 0
-                        ? CustomColors.black.withOpacity(0.1)
-                        : CustomColors.black.withOpacity(0.03),
+                        ? color.withOpacity(0.1)
+                        : color.withOpacity(0.03),
                   ),
                 ),
               ),
@@ -53,7 +55,7 @@ class WaveVisualizer extends StatelessWidget {
                   ? Center(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: CustomColors.black.withOpacity(0.1),
+                          color: color.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         width: double.maxFinite,
@@ -83,8 +85,8 @@ class WaveVisualizer extends StatelessWidget {
                         initialHeight:
                             isPaused ? initialHeight[index % 5] : null,
                         color: index % 2 == 0
-                            ? CustomColors.black
-                            : CustomColors.black.withOpacity(0.3),
+                            ? color
+                            : color.withOpacity(0.3),
                       ),
                     ),
                   ),
@@ -92,7 +94,7 @@ class WaveVisualizer extends StatelessWidget {
                       ? Center(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: CustomColors.black,
+                              color: color,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             width: double.maxFinite,
@@ -144,11 +146,11 @@ class _VisualComponentState extends State<VisualComponent>
 
     final curvedAnimation = CurvedAnimation(
       parent: animController,
-      curve: Curves.easeInOutSine,
+      curve: Curves.easeInOut,
     );
 
     animation = Tween<double>(
-      begin: 5,
+      begin: 20,
       end: widget.height,
     ).animate(curvedAnimation)
       ..addListener(() {
