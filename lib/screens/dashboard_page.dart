@@ -248,6 +248,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               transcriptData['subtitles']);
 
                       final String audioUrl = transcriptData['url'];
+                      final String title = transcriptData['title'];
 
                       List<Subtitle> subtitles = [];
                       String transcriptString = '';
@@ -278,6 +279,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 subtitles: subtitles,
                                 audioUrl: audioUrl,
                                 docId: docId,
+                                title: title,
                               ),
                             ),
                           );
@@ -302,17 +304,19 @@ class _DashboardPageState extends State<DashboardPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(),
-                              const Text(
-                                'Title',
-                                style: TextStyle(
-                                  color: CustomColors.black,
-                                  fontSize: 18,
-                                ),
-                              ),
+                              title.isEmpty
+                                  ? const SizedBox()
+                                  : Text(
+                                      title,
+                                      style: const TextStyle(
+                                        color: CustomColors.black,
+                                        fontSize: 18,
+                                      ),
+                                    ),
                               const SizedBox(height: 4),
                               Text(
                                 transcriptString,
-                                maxLines: 2,
+                                maxLines: title.isEmpty ? 4 : 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: CustomColors.black.withOpacity(0.5),
