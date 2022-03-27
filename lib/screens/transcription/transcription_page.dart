@@ -151,15 +151,25 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     Duration? currentDuration,
   }) {
     return List.generate(subtitles.length, (index) {
-      final startDuration = subtitles[index].start;
-      final endDuration = subtitles[index].end;
+      final startDurationThis = subtitles[index].start;
+      final endDurationThis = subtitles[index].end;
 
       bool shouldHighlight = false;
+      bool isPara = false;
 
       if (currentDuration != null) {
-        if (currentDuration.compareTo(startDuration) >= 0 &&
-            currentDuration.compareTo(endDuration) <= 0) {
+        if (currentDuration.compareTo(startDurationThis) >= 0 &&
+            currentDuration.compareTo(endDurationThis) <= 0) {
           shouldHighlight = true;
+        }
+      }
+
+      if (index > 0) {
+        final endDurationPrev = subtitles[index - 1].end;
+        if ((startDurationThis.inMilliseconds -
+                endDurationPrev.inMilliseconds) >
+            900) {
+          isPara = true;
         }
       }
 
@@ -176,7 +186,9 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         );
       } else {
         return TextSpan(
-          text: subtitles[index].data.substring(1),
+          text: isPara
+              ? '\n\n' + subtitles[index].data.substring(2)
+              : subtitles[index].data.substring(1),
           style: shouldHighlight
               ? const TextStyle(
                   color: CustomColors.black,
@@ -214,6 +226,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
             systemOverlayStyle: const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
               statusBarIconBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
             ),
             iconTheme: const IconThemeData(
               color: Colors.white,
@@ -287,7 +300,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                       RichText(
                         text: TextSpan(
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             color: _playerState == PlayerState.PLAYING
                                 ? CustomColors.black.withOpacity(0.2)
                                 : CustomColors.black,
