@@ -137,4 +137,14 @@ class DatabaseClient {
         .then((value) => log('Title added: $docId'))
         .catchError((error) => log("Failed to add title: $error"));
   }
+
+  Future<void> deleteTranscribe({required String docId}) async {
+    final userDoc =
+        firestore.collection('users').doc(_authClient.auth.currentUser!.uid);
+    final transcriptDoc = userDoc.collection('transcripts').doc(docId);
+
+    await transcriptDoc.delete();
+
+    log('Transcript deleted: $docId');
+  }
 }
