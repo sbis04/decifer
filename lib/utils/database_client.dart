@@ -53,6 +53,7 @@ class DatabaseClient {
       'subtitles': subtitleMapList,
       'url': audioUrl,
       'name': audioName,
+      'title': '',
     };
 
     await transcriptDoc
@@ -119,5 +120,21 @@ class DatabaseClient {
     log('Subtitles retrieved successfully!');
 
     return Tuple2(subtitles, transcriptDoc.docs[0].id);
+  }
+
+  Future<void> storeTitle({
+    required String docId,
+    required String title,
+  }) async {
+    final userDoc =
+        firestore.collection('users').doc(_authClient.auth.currentUser!.uid);
+    final transcriptDoc = userDoc.collection('transcripts').doc(docId);
+
+    final data = {'title': title};
+
+    await transcriptDoc
+        .update(data)
+        .then((value) => log('Title added: $docId'))
+        .catchError((error) => log("Failed to add title: $error"));
   }
 }
