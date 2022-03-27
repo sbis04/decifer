@@ -1,5 +1,6 @@
 import 'package:deepgram_transcribe/res/custom_colors.dart';
 import 'package:deepgram_transcribe/utils/authentication_client.dart';
+import 'package:deepgram_transcribe/utils/database_client.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late final FocusNode _passwordFocusNode;
   late final FocusNode _confirmPasswordFocusNode;
   late final AuthenticationClient _authClient;
+  late final DatabaseClient _databaseClient;
 
   bool _isProcessing = false;
 
@@ -38,6 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _passwordTextController = TextEditingController();
     _confirmPasswordTextController = TextEditingController();
     _authClient = AuthenticationClient();
+    _databaseClient = DatabaseClient();
 
     _nameFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
@@ -92,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _nameTextController,
                       focusNode: _nameFocusNode,
                       textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.name,
                       style: TextStyle(
                         fontSize: 20,
                         color: CustomColors.black.withOpacity(0.8),
@@ -127,6 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _emailTextController,
                       focusNode: _emailFocusNode,
                       textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.emailAddress,
                       style: TextStyle(
                         fontSize: 20,
                         color: CustomColors.black.withOpacity(0.8),
@@ -264,6 +269,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: WaveVisualizer(
                               columnHeight: 50,
                               columnWidth: 10,
+                              isBarVisible: false,
+                              isPaused: false,
                             ),
                           )
                         : SizedBox(
@@ -286,6 +293,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                     password: _passwordTextController.text,
                                   );
 
+                                  if (user != null) {
+                                    await _databaseClient.addUser(user: user);
+                                  }
+
                                   setState(() {
                                     _isProcessing = false;
                                   });
@@ -293,7 +304,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   if (user != null) {
                                     Navigator.of(context).pushAndRemoveUntil(
                                       MaterialPageRoute(
-                                        builder: (context) => DashboardPage(),
+                                        builder: (context) => const DashboardPage(),
                                       ),
                                       (route) => false,
                                     );

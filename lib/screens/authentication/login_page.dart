@@ -1,5 +1,6 @@
 import 'package:deepgram_transcribe/res/custom_colors.dart';
 import 'package:deepgram_transcribe/utils/authentication_client.dart';
+import 'package:deepgram_transcribe/utils/database_client.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   late final FocusNode _emailFocusNode;
   late final FocusNode _passwordFocusNode;
   late final AuthenticationClient _authClient;
+  late final DatabaseClient _databaseClient;
 
   bool _isProcessing = false;
 
@@ -34,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     _authClient = AuthenticationClient();
+    _databaseClient = DatabaseClient();
   }
 
   @override
@@ -191,6 +194,8 @@ class _LoginPageState extends State<LoginPage> {
                           child: WaveVisualizer(
                             columnHeight: 50,
                             columnWidth: 10,
+                            isBarVisible: false,
+                            isPaused: false,
                           ),
                         )
                       : SizedBox(
@@ -219,7 +224,8 @@ class _LoginPageState extends State<LoginPage> {
                                 if (user != null) {
                                   Navigator.of(context).pushAndRemoveUntil(
                                     MaterialPageRoute(
-                                      builder: (context) => DashboardPage(),
+                                      builder: (context) =>
+                                          const DashboardPage(),
                                     ),
                                     (route) => false,
                                   );
@@ -239,10 +245,11 @@ class _LoginPageState extends State<LoginPage> {
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
+                        Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                             builder: (context) => const DashboardPage(),
                           ),
+                          (route) => false,
                         );
                       },
                       child: const Text(
