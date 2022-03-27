@@ -54,6 +54,7 @@ class _DashboardPageState extends State<DashboardPage> {
           systemOverlayStyle: const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
           ),
           title: const Text(
             'decifer',
