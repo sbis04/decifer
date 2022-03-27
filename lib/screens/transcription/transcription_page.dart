@@ -209,25 +209,68 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.white,
+            elevation: 4,
+            backgroundColor: CustomColors.black,
             systemOverlayStyle: const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
-              statusBarIconBrightness: Brightness.dark,
+              statusBarIconBrightness: Brightness.light,
             ),
             iconTheme: const IconThemeData(
-              color: CustomColors.black,
+              color: Colors.white,
             ),
             title: const Text(
               'decifer',
               style: TextStyle(
-                color: CustomColors.black,
+                color: Colors.white,
                 fontSize: 26,
               ),
             ),
             actions: [
               _isTitleStoring ? const TitleSavingIndicator() : const SizedBox()
             ],
+            bottom: PreferredSize(
+              preferredSize: const Size(double.maxFinite, 60),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 16.0),
+                child: TextField(
+                  controller: _titleController,
+                  focusNode: _titleFocusNode,
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.done,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    border: const UnderlineInputBorder(),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.transparent,
+                        width: 3,
+                      ),
+                    ),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    hintStyle: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white.withOpacity(0.5),
+                    ),
+                    hintText: 'Title',
+                  ),
+                  onSubmitted: (_) {
+                    log('Field submitted: ${_titleController.text}');
+                    _storeTitle();
+                  },
+                  // onChanged: (value) => widget.onChange(value),
+                ),
+              ),
+            ),
           ),
           body: Stack(
             children: [
@@ -238,44 +281,9 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _titleController,
-                        focusNode: _titleFocusNode,
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.done,
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: CustomColors.black.withOpacity(0.8),
-                        ),
-                        cursorColor: CustomColors.black,
-                        decoration: InputDecoration(
-                          border: const UnderlineInputBorder(),
-                          focusedBorder: const UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: CustomColors.black,
-                              width: 3,
-                            ),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: CustomColors.black.withOpacity(0.2),
-                              width: 2,
-                            ),
-                          ),
-                          hintStyle: TextStyle(
-                            fontSize: 20,
-                            color: CustomColors.black.withOpacity(0.5),
-                          ),
-                          hintText: 'Title',
-                        ),
-                        onSubmitted: (_) {
-                          log('Field submitted: ${_titleController.text}');
-                          _storeTitle();
-                        },
-                        // onChanged: (value) => widget.onChange(value),
-                      ),
-                      const SizedBox(height: 16),
+                      // const SizedBox(height: 16),
+
+                      const SizedBox(height: 24),
                       RichText(
                         text: TextSpan(
                           style: TextStyle(
@@ -287,7 +295,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                           children: _subtitleTextSpan,
                         ),
                       ),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 130),
                     ],
                   ),
                 ),
@@ -428,7 +436,7 @@ class TitleSavingIndicator extends StatelessWidget {
             height: 24,
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
-                CustomColors.black,
+                Colors.white,
               ),
               strokeWidth: 2,
             ),
