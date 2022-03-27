@@ -29,8 +29,8 @@ class _UploadPageState extends State<UploadPage> {
     });
 
     FilePickerResult? file = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['mp3', 'wav', 'wma', 'aac', 'm4a', 'flac'],
+      type: FileType.audio,
+      // allowedExtensions: ['mp3', 'wav', 'wma', 'aac', 'm4a', 'flac'],
     );
 
     // setState(() {
