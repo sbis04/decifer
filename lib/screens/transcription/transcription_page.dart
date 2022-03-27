@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:deepgram_transcribe/res/custom_colors.dart';
+import 'package:deepgram_transcribe/utils/database_client.dart';
 import 'package:deepgram_transcribe/utils/helper.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:flutter/material.dart';
@@ -16,21 +17,25 @@ class TranscriptionPage extends StatefulWidget {
     required this.docId,
     this.audioFile,
     this.audioUrl,
+    this.title,
   }) : super(key: key);
 
   final List<Subtitle> subtitles;
   final File? audioFile;
   final String? audioUrl;
   final String docId;
+  final String? title;
 
   @override
   State<TranscriptionPage> createState() => _TranscriptionPageState();
 }
 
 class _TranscriptionPageState extends State<TranscriptionPage> {
+  late final DatabaseClient _databaseClient;
   // late final String _entireString;
   late final List<Subtitle> _subtitles;
   late List<TextSpan> _subtitleTextSpan;
+  late final String _docId;
   late final AudioPlayer _audioPlayer;
 
   late final File? _audioFile;
@@ -44,6 +49,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
   double _fraction = 0.0;
 
   bool _isLoading = false;
+  bool _isTitleStoring = false;
 
   PlayerState _playerState = PlayerState.COMPLETED;
 
@@ -66,9 +72,30 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     }
   }
 
+  _storeTitle() async {
+    if (mounted) {
+      setState(() {
+        _isTitleStoring = true;
+      });
+    }
+
+    await _databaseClient.storeTitle(
+      docId: _docId,
+      title: _titleController.text,
+    );
+
+    if (mounted) {
+      setState(() {
+        _isTitleStoring = false;
+      });
+    }
+  }
+
   @override
   void initState() {
-    _titleController = TextEditingController();
+    _databaseClient = DatabaseClient();
+    _docId = widget.docId;
+    _titleController = TextEditingController(text: widget.title);
     _titleFocusNode = FocusNode();
     _subtitles = widget.subtitles;
     Helper.printResult(_subtitles);
@@ -168,206 +195,218 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
+    return WillPopScope(
+      onWillPop: () async {
         _titleFocusNode.unfocus();
+        _storeTitle();
+        return true;
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          elevation: 0,
+      child: GestureDetector(
+        onTap: () {
+          _titleFocusNode.unfocus();
+          _storeTitle();
+        },
+        child: Scaffold(
           backgroundColor: Colors.white,
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.dark,
-          ),
-          iconTheme: const IconThemeData(
-            color: CustomColors.black,
-          ),
-          title: const Text(
-            'decifer',
-            style: TextStyle(
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            systemOverlayStyle: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+            ),
+            iconTheme: const IconThemeData(
               color: CustomColors.black,
-              fontSize: 26,
             ),
+            title: const Text(
+              'decifer',
+              style: TextStyle(
+                color: CustomColors.black,
+                fontSize: 26,
+              ),
+            ),
+            actions: [
+              _isTitleStoring ? const TitleSavingIndicator() : const SizedBox()
+            ],
           ),
-          actions: const [
-            TitleSavingIndicator(),
-          ],
-        ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _titleController,
-                      focusNode: _titleFocusNode,
-                      keyboardType: TextInputType.name,
-                      textInputAction: TextInputAction.done,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: CustomColors.black.withOpacity(0.8),
-                      ),
-                      cursorColor: CustomColors.black,
-                      decoration: InputDecoration(
-                        border: const UnderlineInputBorder(),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: CustomColors.black,
-                            width: 3,
-                          ),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: CustomColors.black.withOpacity(0.6),
-                            width: 2,
-                          ),
-                        ),
-                        hintStyle: TextStyle(
-                          fontSize: 20,
-                          color: CustomColors.black.withOpacity(0.5),
-                        ),
-                        hintText: 'Title',
-                      ),
-                      // onChanged: (value) => widget.onChange(value),
-                    ),
-                    const SizedBox(height: 16),
-                    RichText(
-                      text: TextSpan(
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _titleController,
+                        focusNode: _titleFocusNode,
+                        keyboardType: TextInputType.name,
+                        textInputAction: TextInputAction.done,
                         style: TextStyle(
-                          fontSize: 18,
-                          color: _playerState == PlayerState.PLAYING
-                              ? CustomColors.black.withOpacity(0.2)
-                              : CustomColors.black,
+                          fontSize: 20,
+                          color: CustomColors.black.withOpacity(0.8),
                         ),
-                        children: _subtitleTextSpan,
+                        cursorColor: CustomColors.black,
+                        decoration: InputDecoration(
+                          border: const UnderlineInputBorder(),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CustomColors.black,
+                              width: 3,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CustomColors.black.withOpacity(0.2),
+                              width: 2,
+                            ),
+                          ),
+                          hintStyle: TextStyle(
+                            fontSize: 20,
+                            color: CustomColors.black.withOpacity(0.5),
+                          ),
+                          hintText: 'Title',
+                        ),
+                        onSubmitted: (_) {
+                          log('Field submitted: ${_titleController.text}');
+                          _storeTitle();
+                        },
+                        // onChanged: (value) => widget.onChange(value),
+                      ),
+                      const SizedBox(height: 16),
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: _playerState == PlayerState.PLAYING
+                                ? CustomColors.black.withOpacity(0.2)
+                                : CustomColors.black,
+                          ),
+                          children: _subtitleTextSpan,
+                        ),
+                      ),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: Container(
+                    width: double.maxFinite,
+                    // height: 80,
+                    decoration: BoxDecoration(
+                      color: CustomColors.green,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: WaveVisualizer(
+                              columnHeight: 50,
+                              columnWidth: 10,
+                              isPaused: _playerState == PlayerState.PLAYING
+                                  ? false
+                                  : true,
+                              widthFactor: _fraction,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          _isLoading
+                              ? Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black26,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.black54,
+                                      ),
+                                    ),
+                                    // child: Icon(
+                                    //   Icons.play_arrow_rounded,
+                                    //   size: 40,
+                                    //   color: Colors.white,
+                                    // ),
+                                  ),
+                                )
+                              : _playerState == PlayerState.COMPLETED ||
+                                      _playerState == PlayerState.STOPPED
+                                  ? InkWell(
+                                      onTap: () async {
+                                        await startAudioPlayback();
+                                      },
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black26,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Icon(
+                                            Icons.play_arrow_rounded,
+                                            size: 40,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : _playerState == PlayerState.PAUSED
+                                      ? InkWell(
+                                          onTap: () async {
+                                            await _audioPlayer.resume();
+                                          },
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Colors.black26,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(
+                                                Icons.play_arrow_rounded,
+                                                size: 40,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : InkWell(
+                                          onTap: () async {
+                                            await _audioPlayer.pause();
+                                          },
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Colors.black26,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(
+                                                Icons.pause_outlined,
+                                                size: 40,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 50),
-                  ],
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: Container(
-                  width: double.maxFinite,
-                  // height: 80,
-                  decoration: BoxDecoration(
-                    color: CustomColors.green,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 16.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: WaveVisualizer(
-                            columnHeight: 50,
-                            columnWidth: 10,
-                            isPaused: _playerState == PlayerState.PLAYING
-                                ? false
-                                : true,
-                            widthFactor: _fraction,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        _isLoading
-                            ? Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.black26,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(10.0),
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.black54,
-                                    ),
-                                  ),
-                                  // child: Icon(
-                                  //   Icons.play_arrow_rounded,
-                                  //   size: 40,
-                                  //   color: Colors.white,
-                                  // ),
-                                ),
-                              )
-                            : _playerState == PlayerState.COMPLETED ||
-                                    _playerState == PlayerState.STOPPED
-                                ? InkWell(
-                                    onTap: () async {
-                                      await startAudioPlayback();
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.black26,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Icon(
-                                          Icons.play_arrow_rounded,
-                                          size: 40,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : _playerState == PlayerState.PAUSED
-                                    ? InkWell(
-                                        onTap: () async {
-                                          await _audioPlayer.resume();
-                                        },
-                                        child: Container(
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black26,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Icon(
-                                              Icons.play_arrow_rounded,
-                                              size: 40,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : InkWell(
-                                        onTap: () async {
-                                          await _audioPlayer.pause();
-                                        },
-                                        child: Container(
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black26,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Icon(
-                                              Icons.pause_outlined,
-                                              size: 40,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                      ],
-                    ),
                   ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
