@@ -285,7 +285,7 @@ class _RecordPageState extends State<RecordPage> {
                         onPressed: () async {
                           final file = File(_filePath!);
 
-                          final Tuple2<List<Subtitle>, String> result =
+                          final Tuple3<List<Subtitle>, String, String> result =
                               await showModalBottomSheet(
                             isDismissible: false,
                             context: context,
@@ -298,6 +298,7 @@ class _RecordPageState extends State<RecordPage> {
 
                           final subtitles = result.item1;
                           final docId = result.item2;
+                          final downloadUrl = result.item3;
 
                           log('Received transcripts!');
 
@@ -306,6 +307,7 @@ class _RecordPageState extends State<RecordPage> {
                               builder: (context) => TranscriptionPage(
                                 subtitles: subtitles,
                                 audioFile: file,
+                                audioUrl: downloadUrl,
                                 docId: docId,
                               ),
                             ),
