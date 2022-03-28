@@ -8,6 +8,7 @@ import 'package:deepgram_transcribe/utils/helper.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:subtitle/subtitle.dart';
 
 class TranscriptionPage extends StatefulWidget {
@@ -15,14 +16,14 @@ class TranscriptionPage extends StatefulWidget {
     Key? key,
     required this.subtitles,
     required this.docId,
+    required this.audioUrl,
     this.audioFile,
-    this.audioUrl,
     this.title,
   }) : super(key: key);
 
   final List<Subtitle> subtitles;
   final File? audioFile;
-  final String? audioUrl;
+  final String audioUrl;
   final String docId;
   final String? title;
 
@@ -39,7 +40,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
   late final AudioPlayer _audioPlayer;
 
   late final File? _audioFile;
-  late final String? _audioUrl;
+  late final String _audioUrl;
 
   late final TextEditingController _titleController;
   late final FocusNode _titleFocusNode;
@@ -50,6 +51,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
 
   bool _isLoading = false;
   bool _isTitleStoring = false;
+  String _singleText = '';
 
   PlayerState _playerState = PlayerState.COMPLETED;
 
@@ -59,7 +61,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         _isLoading = true;
       });
       await _audioPlayer.play(
-        _audioUrl!,
+        _audioUrl,
         isLocal: false,
         stayAwake: true,
       );
@@ -141,7 +143,11 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
       }
     });
 
-    _subtitleTextSpan = generateTextSpans(_subtitles);
+    _subtitleTextSpan = generateTextSpans(_subtitles, isFirst: true);
+    // _singleText +=
+    //     _subtitleTextSpan.fold('', (prev, curr) => '$prev\n${curr.text!}');
+
+    print(_singleText);
 
     super.initState();
   }
@@ -149,6 +155,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
   generateTextSpans(
     List<Subtitle> subtitles, {
     Duration? currentDuration,
+    bool isFirst = false,
   }) {
     return List.generate(subtitles.length, (index) {
       final startDurationThis = subtitles[index].start;
@@ -176,8 +183,11 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
       log('HIGHLIGHT: $shouldHighlight');
 
       if (index == 0) {
+        final text = subtitles[index].data.substring(2);
+        if (isFirst) _singleText += text;
+
         return TextSpan(
-          text: subtitles[index].data.substring(2),
+          text: text,
           style: shouldHighlight
               ? const TextStyle(
                   color: CustomColors.black,
@@ -185,10 +195,13 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
               : null,
         );
       } else {
+        final text = isPara
+            ? '\n\n' + subtitles[index].data.substring(2)
+            : subtitles[index].data.substring(1);
+        if (isFirst) _singleText += text;
+
         return TextSpan(
-          text: isPara
-              ? '\n\n' + subtitles[index].data.substring(2)
-              : subtitles[index].data.substring(1),
+          text: text,
           style: shouldHighlight
               ? const TextStyle(
                   color: CustomColors.black,
@@ -251,41 +264,60 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
               child: Padding(
                 padding: const EdgeInsets.only(
                     left: 16.0, right: 16.0, bottom: 16.0),
-                child: TextField(
-                  controller: _titleController,
-                  focusNode: _titleFocusNode,
-                  keyboardType: TextInputType.name,
-                  textInputAction: TextInputAction.done,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                  cursorColor: Colors.white,
-                  decoration: InputDecoration(
-                    border: const UnderlineInputBorder(),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 3,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _titleController,
+                        focusNode: _titleFocusNode,
+                        keyboardType: TextInputType.name,
+                        textInputAction: TextInputAction.done,
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                        cursorColor: Colors.white,
+                        decoration: InputDecoration(
+                          border: const UnderlineInputBorder(),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.transparent,
+                              width: 3,
+                            ),
+                          ),
+                          enabledBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          hintStyle: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                          hintText: 'Title',
+                        ),
+                        onSubmitted: (_) {
+                          log('Field submitted: ${_titleController.text}');
+                          _storeTitle();
+                        },
+                        // onChanged: (value) => widget.onChange(value),
                       ),
                     ),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 2,
+                    IconButton(
+                      onPressed: () {
+                        Helper.convertToPdf(
+                          text: _singleText,
+                          title: _titleController.text,
+                          audioUrl: _audioUrl,
+                        );
+                      },
+                      icon: const FaIcon(
+                        FontAwesomeIcons.share,
+                        color: Colors.white,
                       ),
-                    ),
-                    hintStyle: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                    hintText: 'Title',
-                  ),
-                  onSubmitted: (_) {
-                    log('Field submitted: ${_titleController.text}');
-                    _storeTitle();
-                  },
-                  // onChanged: (value) => widget.onChange(value),
+                    )
+                  ],
                 ),
               ),
             ),
