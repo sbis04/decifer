@@ -47,6 +47,7 @@ dependencies:
   shimmer: ^2.0.0
   record: ^3.0.3
   tuple: ^2.0.0
+  printing: ^5.7.4
 
 dev_dependencies:
   flutter_test:
