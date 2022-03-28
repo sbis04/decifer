@@ -209,14 +209,19 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        _titleFocusNode.unfocus();
-        _storeTitle();
+        if (_titleFocusNode.hasFocus) {
+          _titleFocusNode.unfocus();
+          _storeTitle();
+        }
+
         return true;
       },
       child: GestureDetector(
         onTap: () {
-          _titleFocusNode.unfocus();
-          _storeTitle();
+          if (_titleFocusNode.hasFocus) {
+            _titleFocusNode.unfocus();
+            _storeTitle();
+          }
         },
         child: Scaffold(
           backgroundColor: Colors.white,
