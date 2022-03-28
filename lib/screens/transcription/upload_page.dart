@@ -105,7 +105,7 @@ class _UploadPageState extends State<UploadPage> {
                         if (pickedFile != null && pickedFile.path != null) {
                           final file = File(pickedFile.path!);
 
-                          final Tuple2<List<Subtitle>, String> result =
+                          final Tuple3<List<Subtitle>, String, String> result =
                               await showModalBottomSheet(
                             isDismissible: false,
                             context: context,
@@ -118,6 +118,7 @@ class _UploadPageState extends State<UploadPage> {
 
                           final subtitles = result.item1;
                           final docId = result.item2;
+                          final downloadUrl = result.item3;
 
                           log('Received transcripts!');
 
@@ -126,6 +127,7 @@ class _UploadPageState extends State<UploadPage> {
                               builder: (context) => TranscriptionPage(
                                 subtitles: subtitles,
                                 audioFile: file,
+                                audioUrl: downloadUrl,
                                 docId: docId,
                               ),
                             ),
