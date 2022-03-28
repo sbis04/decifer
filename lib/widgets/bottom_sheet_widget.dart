@@ -114,7 +114,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
 
     await Future.delayed(const Duration(seconds: 2));
 
-    Navigator.of(context).pop(Tuple2(subtitles, docId));
+    Navigator.of(context).pop(Tuple3(subtitles, docId, downloadUrl));
   }
 
   @override
