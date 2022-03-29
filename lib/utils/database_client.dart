@@ -29,6 +29,7 @@ class DatabaseClient {
     required List<Subtitle> subtitles,
     required String audioUrl,
     required String audioName,
+    required List<double> confidences,
   }) async {
     final userDoc =
         firestore.collection('users').doc(_authClient.auth.currentUser!.uid);
@@ -53,6 +54,7 @@ class DatabaseClient {
       'subtitles': subtitleMapList,
       'url': audioUrl,
       'name': audioName,
+      'confidences': confidences,
       'title': '',
     };
 
@@ -92,8 +94,8 @@ class DatabaseClient {
     return isPresent;
   }
 
-  Future<Tuple2<List<Subtitle>, String>> retrieveSubtitles(
-      {required String audioName}) async {
+  Future<Tuple4<List<Subtitle>, String, String, List<double>>>
+      retrieveSubtitles({required String audioName}) async {
     final userDoc =
         firestore.collection('users').doc(_authClient.auth.currentUser!.uid);
     final transcriptDoc = await userDoc
@@ -103,6 +105,9 @@ class DatabaseClient {
 
     final List<Map<String, dynamic>> rawSubtitles =
         List<Map<String, dynamic>>.from(transcriptDoc.docs[0].get('subtitles'));
+
+    final downloadUrl = transcriptDoc.docs[0].get('url');
+    final confidences = transcriptDoc.docs[0].get('confidences');
 
     List<Subtitle> subtitles = [];
 
@@ -119,7 +124,12 @@ class DatabaseClient {
 
     log('Subtitles retrieved successfully!');
 
-    return Tuple2(subtitles, transcriptDoc.docs[0].id);
+    return Tuple4(
+      subtitles,
+      transcriptDoc.docs[0].id,
+      downloadUrl,
+      confidences,
+    );
   }
 
   Future<void> storeTitle({
