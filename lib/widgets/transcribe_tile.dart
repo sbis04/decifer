@@ -17,6 +17,7 @@ class TranscribeTile extends StatelessWidget {
     required this.index,
     required this.isLongPressed,
     required this.onLongPressed,
+    required this.confidences,
   }) : super(key: key);
 
   final DatabaseClient databaseClient;
@@ -28,6 +29,7 @@ class TranscribeTile extends StatelessWidget {
   final int index;
   final bool isLongPressed;
   final Function(bool) onLongPressed;
+  final List<double> confidences;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class TranscribeTile extends StatelessWidget {
                     audioUrl: audioUrl,
                     docId: docId,
                     title: title,
+                    confidences: confidences,
                   ),
                 ),
               );
