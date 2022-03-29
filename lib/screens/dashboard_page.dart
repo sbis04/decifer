@@ -264,6 +264,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
                           final String audioUrl = transcriptData['url'];
                           final String title = transcriptData['title'];
+                          final List<double> confidences =
+                              List<double>.from(transcriptData['confidences']);
 
                           List<Subtitle> subtitles = [];
                           String transcriptString = '';
@@ -293,6 +295,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             audioUrl: audioUrl,
                             docId: docId,
                             title: title,
+                            confidences: confidences,
                             transcriptString: transcriptString,
                             index: index,
                             isLongPressed: _longPressedIndex == index
