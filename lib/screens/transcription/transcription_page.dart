@@ -8,8 +8,10 @@ import 'package:deepgram_transcribe/utils/helper.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:subtitle/subtitle.dart';
+
+import '../../widgets/share_pdf_button.dart';
+import '../../widgets/title_saving_indicator.dart';
 
 class TranscriptionPage extends StatefulWidget {
   const TranscriptionPage({
@@ -17,6 +19,7 @@ class TranscriptionPage extends StatefulWidget {
     required this.subtitles,
     required this.docId,
     required this.audioUrl,
+    required this.confidences,
     this.audioFile,
     this.title,
   }) : super(key: key);
@@ -26,6 +29,7 @@ class TranscriptionPage extends StatefulWidget {
   final String audioUrl;
   final String docId;
   final String? title;
+  final List<double> confidences;
 
   @override
   State<TranscriptionPage> createState() => _TranscriptionPageState();
@@ -41,19 +45,31 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
 
   late final File? _audioFile;
   late final String _audioUrl;
+  late final List<double> _confidences;
 
   late final TextEditingController _titleController;
   late final FocusNode _titleFocusNode;
 
   Duration? _totalDuration;
+  String? _totalDurationString;
   Duration? _currentDuration;
+  String? _currentDurationString;
   double _fraction = 0.0;
 
   bool _isLoading = false;
   bool _isTitleStoring = false;
+  bool _isConfidenceMapVisible = false;
   String _singleText = '';
 
   PlayerState _playerState = PlayerState.COMPLETED;
+
+  String _getDurationString(Duration d) {
+    final paddedString = d.toString().split('.').first.padLeft(8, "0");
+    final finalString = paddedString.split(':').first == '00'
+        ? paddedString.substring(3)
+        : paddedString;
+    return finalString;
+  }
 
   startAudioPlayback() async {
     if (_audioFile == null) {
@@ -103,10 +119,17 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     Helper.printResult(_subtitles);
     _audioFile = widget.audioFile;
     _audioUrl = widget.audioUrl;
+    _confidences = generateConfidenceMap(widget.confidences);
+    print(_confidences);
     _audioPlayer = AudioPlayer();
     _audioPlayer.onAudioPositionChanged.listen((Duration d) {
       log('Current duration: $d');
       _currentDuration = d;
+      if (mounted) {
+        setState(() {
+          _currentDurationString = _getDurationString(d);
+        });
+      }
 
       if (_currentDuration == const Duration(seconds: 0)) {
         if (mounted) {
@@ -130,6 +153,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
       if (mounted) {
         setState(() {
           _totalDuration = d;
+          _totalDurationString = _getDurationString(d);
         });
       }
     });
@@ -150,6 +174,23 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     print(_singleText);
 
     super.initState();
+  }
+
+  List<double> generateConfidenceMap(List<double> confidences) {
+    final max =
+        confidences.reduce((current, next) => current > next ? current : next);
+    final min =
+        confidences.reduce((current, next) => current < next ? current : next);
+
+    const newMin = 0.2;
+    const newMax = 1.0;
+
+    return List.generate(confidences.length, (index) {
+      final value =
+          (newMax - newMin) / (max - min) * (confidences[index] - max) + newMax;
+      // final value = (confidences[index] - min) / (max - min);
+      return value;
+    });
   }
 
   generateTextSpans(
@@ -189,10 +230,19 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         return TextSpan(
           text: text,
           style: shouldHighlight
-              ? const TextStyle(
-                  color: CustomColors.black,
+              ? TextStyle(
+                  color: _isConfidenceMapVisible
+                      ? Colors.white
+                      : CustomColors.black,
+                  backgroundColor: _isConfidenceMapVisible
+                      ? CustomColors.black.withOpacity(_confidences[index])
+                      : Colors.transparent,
                 )
-              : null,
+              : TextStyle(
+                  backgroundColor: _isConfidenceMapVisible
+                      ? CustomColors.black.withOpacity(_confidences[index])
+                      : Colors.transparent,
+                ),
         );
       } else {
         final text = isPara
@@ -203,10 +253,19 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         return TextSpan(
           text: text,
           style: shouldHighlight
-              ? const TextStyle(
-                  color: CustomColors.black,
+              ? TextStyle(
+                  color: _isConfidenceMapVisible
+                      ? Colors.white
+                      : CustomColors.black,
+                  backgroundColor: _isConfidenceMapVisible
+                      ? CustomColors.black.withOpacity(_confidences[index])
+                      : Colors.transparent,
                 )
-              : null,
+              : TextStyle(
+                  backgroundColor: _isConfidenceMapVisible
+                      ? CustomColors.black.withOpacity(_confidences[index])
+                      : Colors.transparent,
+                ),
         );
       }
     }).toList();
@@ -263,7 +322,10 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
               preferredSize: const Size(double.maxFinite, 60),
               child: Padding(
                 padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, bottom: 16.0),
+                  left: 16.0,
+                  right: 16.0,
+                  bottom: 16.0,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -304,18 +366,10 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                         // onChanged: (value) => widget.onChange(value),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        Helper.convertToPdf(
-                          text: _singleText,
-                          title: _titleController.text,
-                          audioUrl: _audioUrl,
-                        );
-                      },
-                      icon: const FaIcon(
-                        FontAwesomeIcons.share,
-                        color: Colors.white,
-                      ),
+                    SharePDFButton(
+                      singleText: _singleText,
+                      titleController: _titleController,
+                      audioUrl: _audioUrl,
                     )
                   ],
                 ),
@@ -331,8 +385,49 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      // const SizedBox(height: 16),
-
+                      const SizedBox(height: 24),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: CustomColors.green,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: CustomColors.black,
+                            width: 2,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Show confidence map',
+                                style: TextStyle(
+                                  color: CustomColors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Spacer(),
+                              Switch(
+                                value: _isConfidenceMapVisible,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isConfidenceMapVisible =
+                                        !_isConfidenceMapVisible;
+                                    _subtitleTextSpan = generateTextSpans(
+                                      _subtitles,
+                                      isFirst: true,
+                                    );
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       RichText(
                         text: TextSpan(
@@ -340,13 +435,70 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                             fontSize: 16,
                             color: _playerState == PlayerState.PLAYING
                                 ? CustomColors.black.withOpacity(0.2)
-                                : CustomColors.black,
+                                : _isConfidenceMapVisible
+                                    ? Colors.white
+                                    : CustomColors.black,
                           ),
                           children: _subtitleTextSpan,
                         ),
                       ),
-                      const SizedBox(height: 130),
+                      SizedBox(
+                        height: _totalDurationString == null ? 130 : 150,
+                      ),
                     ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: CustomColors.black,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: CustomColors.green,
+                        width: 3,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(fontSize: 14),
+                                    children: [
+                                      TextSpan(text: _currentDurationString),
+                                      const TextSpan(text: ' / '),
+                                      TextSpan(
+                                        text: _totalDurationString,
+                                        style: const TextStyle(
+                                          color: Colors.white54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 600),
+                          height: _totalDurationString == null ? 50 : 88,
+                          width: double.maxFinite,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -356,7 +508,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   child: Container(
                     width: double.maxFinite,
-                    // height: 80,
+                    height: 88,
                     decoration: BoxDecoration(
                       color: CustomColors.green,
                       borderRadius: BorderRadius.circular(20),
@@ -390,11 +542,6 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
                                         Colors.black54,
                                       ),
                                     ),
-                                    // child: Icon(
-                                    //   Icons.play_arrow_rounded,
-                                    //   size: 40,
-                                    //   color: Colors.white,
-                                    // ),
                                   ),
                                 )
                               : _playerState == PlayerState.COMPLETED ||
@@ -467,32 +614,6 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class TitleSavingIndicator extends StatelessWidget {
-  const TitleSavingIndicator({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Padding(
-          padding: EdgeInsets.only(right: 12),
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.white,
-              ),
-              strokeWidth: 2,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
