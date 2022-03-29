@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -50,9 +51,13 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
         text = 'Already present, retrieving...';
       });
 
-      final subtitles = await _databaseClient.retrieveSubtitles(
+      final result = await _databaseClient.retrieveSubtitles(
         audioName: _fileName,
       );
+
+      final subtitles = result.item1;
+      final docId = result.item2;
+      final downloadUrl = result.item3;
 
       setState(() {
         text = 'Retrieved successfully';
@@ -64,7 +69,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
       });
 
       await Future.delayed(const Duration(seconds: 2));
-      Navigator.of(context).pop(subtitles);
+      Navigator.of(context).pop(Tuple4(subtitles, docId, downloadUrl, []));
 
       return;
     }
@@ -85,8 +90,12 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
 
     // debugPrint("result: ${resp.data}");
 
-    final String data = resp.data;
-    final subtitles = await Helper.getSubtitle(data);
+    final data = jsonDecode(resp.data);
+    final String transcripts = data['transcript'];
+    final List<double> confidences = List<double>.from(data['confidences']);
+    final subtitles = await Helper.getSubtitle(transcripts);
+
+    print('CONFIDENCES: $confidences');
 
     setState(() {
       text = 'Saving...';
@@ -101,6 +110,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
       subtitles: subtitles,
       audioUrl: downloadUrl!,
       audioName: _fileName,
+      confidences: confidences,
     );
 
     setState(() {
@@ -114,7 +124,8 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
 
     await Future.delayed(const Duration(seconds: 2));
 
-    Navigator.of(context).pop(Tuple3(subtitles, docId, downloadUrl));
+    Navigator.of(context)
+        .pop(Tuple4(subtitles, docId, downloadUrl, confidences));
   }
 
   @override
