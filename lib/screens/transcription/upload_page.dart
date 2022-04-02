@@ -143,7 +143,7 @@ class _UploadPageState extends State<UploadPage> {
                       child: const Padding(
                         padding: EdgeInsets.all(10.0),
                         child: Text(
-                          'Upload File',
+                          'Upload Audio',
                           style: TextStyle(fontSize: 24),
                         ),
                       ),
