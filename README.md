@@ -2,6 +2,8 @@
 
 ![](screenshots/decifer_feature_graphic.png)
 
+> Blog post about this project: https://dev.to/sbis04/decifer-generate-transcripts-with-ease-5hl3
+
 A cross-platform mobile app that helps you to generate transcripts either from a voice recording or by uploading an audio file. The project uses a totally serverless architecture.
 
 ## Architecture
