@@ -50,6 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           elevation: 4,
+          centerTitle: false,
           backgroundColor: Colors.white,
           systemOverlayStyle: const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
