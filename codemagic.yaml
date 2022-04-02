@@ -10,7 +10,7 @@ workflows:
       vars:
         FCI_KEYSTORE_PATH: /tmp/release-key.keystore
       groups:
-        - group-name
+        - release-keystore
     cache:
       cache_paths:
         - $HOME/.gradle/caches
