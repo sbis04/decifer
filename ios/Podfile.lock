@@ -124,6 +124,8 @@ PODS:
   - nanopb/encode (2.30908.0)
   - path_provider_ios (0.0.1):
     - Flutter
+  - printing (1.0.0):
+    - Flutter
   - PromisesObjC (2.0.0)
   - record (0.0.1):
     - Flutter
@@ -143,6 +145,7 @@ DEPENDENCIES:
   - FirebaseFirestore (from `https://github.com/invertase/firestore-ios-sdk-frameworks.git`, tag `8.11.0`)
   - Flutter (from `Flutter`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - printing (from `.symlinks/plugins/printing/ios`)
   - record (from `.symlinks/plugins/record/ios`)
 
 SPEC REPOS:
@@ -185,6 +188,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
+  printing:
+    :path: ".symlinks/plugins/printing/ios"
   record:
     :path: ".symlinks/plugins/record/ios"
 
@@ -207,7 +212,7 @@ SPEC CHECKSUMS:
   FirebaseAuth: d96d73aba85d192d7a7aa0b86dd6d7f8ec170b4b
   FirebaseCore: 2f4f85b453cc8fea4bb2b37e370007d2bcafe3f0
   FirebaseCoreDiagnostics: fd0c8490f34287229c1d6c103d3a55f81ec85712
-  FirebaseFirestore: 8a0c6a06219bbaad86c72bcb66688c28995dde84
+  FirebaseFirestore: deb508c2c4bc7bc7a9d87d6f9157c66d5caa376a
   FirebaseFunctions: 2bad3e4365dee72a85a6baa6ccd684f024d14696
   FirebaseStorage: 4d05cb1112ff8822a0f9f5090da8bd6d550602ec
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
@@ -216,6 +221,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 4577a4cc914a5a07c40a8a0ad0acc22080418c2d
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  printing: eafa00acb682c0ca029d4d98d0798f55a1e27102
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
   record: 7ee2393532f8553bbb09fa19e95478323b7c0a99
   SDWebImage: 0905f1b7760fc8ac4198cae0036600d67478751e
