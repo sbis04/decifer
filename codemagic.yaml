@@ -1,0 +1,47 @@
+# Automatically generated on 2022-04-02 UTC from https://codemagic.io/app/6240c24a66f743ede7aca591/settings
+# Note that this configuration is not an exact match to UI settings. Review and adjust as necessary.
+
+workflows:
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      vars:
+        FCI_KEYSTORE_PATH: /tmp/release-key.keystore
+      groups:
+        - group-name
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $FLUTTER_ROOT/.pub-cache
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+      tag_patterns:
+        - pattern: '*'
+          include: true
+    scripts:
+      - name: Set up local properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$FCI_BUILD_DIR/android/local.properties"
+
+      - name: Get Flutter packages
+        script: flutter packages pub get
+
+      - name: Build for Android
+        script: |
+          echo $FCI_KEYSTORE | base64 --decode > $FCI_KEYSTORE_PATH
+          flutter build appbundle
+    artifacts:
+      - build/**/outputs/apk/**/*.apk
+      - build/**/outputs/bundle/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - sbis1999@gmail.com
