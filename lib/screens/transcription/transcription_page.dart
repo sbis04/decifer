@@ -298,6 +298,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
+            centerTitle: false,
             elevation: 4,
             backgroundColor: CustomColors.black,
             systemOverlayStyle: const SystemUiOverlayStyle(

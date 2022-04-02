@@ -74,6 +74,7 @@ class _RecordPageState extends State<RecordPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
+        centerTitle: false,
         backgroundColor: Colors.white,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
