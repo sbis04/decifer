@@ -1,4 +1,4 @@
-# Decifer
+# Decifer [![Codemagic build status](https://api.codemagic.io/apps/6240c24a66f743ede7aca591/android-workflow/status_badge.svg)](https://codemagic.io/apps/6240c24a66f743ede7aca591/android-workflow/latest_build)
 
 ![](screenshots/decifer_feature_graphic.png)
 
