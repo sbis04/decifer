@@ -6,6 +6,8 @@
 
 A cross-platform mobile app that helps you to generate transcripts either from a voice recording or by uploading an audio file. The project uses a totally serverless architecture.
 
+![](screenshots/transcipt_playback.gif)
+
 ## Architecture
 
 The mobile app is created using [Flutter](https://flutter.dev/) which is integrated with [Firebase](https://firebase.google.com/). Firebase **Cloud Functions** is used to deploy the backend code required for communicating with the Deepgram API.
