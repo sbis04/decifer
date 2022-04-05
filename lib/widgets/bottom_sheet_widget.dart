@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 
@@ -95,7 +96,9 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
     final List<double> confidences = List<double>.from(data['confidences']);
     final subtitles = await Helper.getSubtitle(transcripts);
 
-    print('CONFIDENCES: $confidences');
+    if (kDebugMode) {
+      print('CONFIDENCES: $confidences');
+    }
 
     setState(() {
       text = 'Saving...';
