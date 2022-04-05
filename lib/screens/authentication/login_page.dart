@@ -242,26 +242,26 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                   const SizedBox(height: 30),
-                  Center(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const DashboardPage(),
-                          ),
-                          (route) => false,
-                        );
-                      },
-                      child: const Text(
-                        'Skip signing in',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Center(
+                  //   child: GestureDetector(
+                  //     onTap: () {
+                  //       Navigator.of(context).pushAndRemoveUntil(
+                  //         MaterialPageRoute(
+                  //           builder: (context) => const DashboardPage(),
+                  //         ),
+                  //         (route) => false,
+                  //       );
+                  //     },
+                  //     child: const Text(
+                  //       'Skip signing in',
+                  //       style: TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.w500,
+                  //         color: Colors.grey,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
