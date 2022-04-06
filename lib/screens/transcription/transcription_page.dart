@@ -6,6 +6,7 @@ import 'package:deepgram_transcribe/res/custom_colors.dart';
 import 'package:deepgram_transcribe/utils/database_client.dart';
 import 'package:deepgram_transcribe/utils/helper.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:subtitle/subtitle.dart';
@@ -120,7 +121,9 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     _audioFile = widget.audioFile;
     _audioUrl = widget.audioUrl;
     _confidences = generateConfidenceMap(widget.confidences);
-    print(_confidences);
+    if (kDebugMode) {
+      print(_confidences);
+    }
     _audioPlayer = AudioPlayer();
     _audioPlayer.onAudioPositionChanged.listen((Duration d) {
       log('Current duration: $d');
@@ -171,7 +174,9 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
     // _singleText +=
     //     _subtitleTextSpan.fold('', (prev, curr) => '$prev\n${curr.text!}');
 
-    print(_singleText);
+    if (kDebugMode) {
+      print(_singleText);
+    }
 
     super.initState();
   }

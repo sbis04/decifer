@@ -111,7 +111,7 @@ class DatabaseClient {
 
     List<Subtitle> subtitles = [];
 
-    rawSubtitles.forEach((rawSubtitle) {
+    for (var rawSubtitle in rawSubtitles) {
       final subtitle = Subtitle(
         start: Duration(milliseconds: rawSubtitle['start']),
         end: Duration(milliseconds: rawSubtitle['end']),
@@ -120,7 +120,7 @@ class DatabaseClient {
       );
 
       subtitles.add(subtitle);
-    });
+    }
 
     log('Subtitles retrieved successfully!');
 

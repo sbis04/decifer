@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:subtitle/subtitle.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -24,9 +24,11 @@ class Helper {
   static void printResult(List<Subtitle> subtitles) {
     // subtitles.sort((s1, s2) => s1.compareTo(s2));
     for (var result in subtitles) {
-      print(
+      if (kDebugMode) {
+        print(
         '(${result.index}) Start: ${result.start}, end: ${result.end} [${result.data}]',
       );
+      }
     }
   }
 

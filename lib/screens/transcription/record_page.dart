@@ -1,14 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:deepgram_transcribe/res/custom_colors.dart';
 import 'package:deepgram_transcribe/screens/transcription/transcription_page.dart';
-import 'package:deepgram_transcribe/utils/database_client.dart';
-import 'package:deepgram_transcribe/utils/helper.dart';
-import 'package:deepgram_transcribe/utils/storage_client.dart';
 import 'package:deepgram_transcribe/widgets/wave_visualizer.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

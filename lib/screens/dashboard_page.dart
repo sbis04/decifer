@@ -118,7 +118,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
           ],
           bottom: PreferredSize(
-            preferredSize: Size(double.maxFinite, 80),
+            preferredSize: const Size(double.maxFinite, 80),
             child: Row(
               children: [
                 Expanded(
