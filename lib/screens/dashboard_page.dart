@@ -95,6 +95,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: TextButton(
                       onPressed: () async {
                         await _authClient.signOut();
+                        if (!mounted) return;
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                             builder: (context) => const LoginPage(),

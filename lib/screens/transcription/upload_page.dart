@@ -124,6 +124,7 @@ class _UploadPageState extends State<UploadPage> {
 
                           log('Received transcripts!');
 
+                          if (!mounted) return;
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => TranscriptionPage(

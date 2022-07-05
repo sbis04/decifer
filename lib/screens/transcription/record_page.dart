@@ -299,6 +299,7 @@ class _RecordPageState extends State<RecordPage> {
 
                           log('Received transcripts!');
 
+                          if (!mounted) return;
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => TranscriptionPage(
