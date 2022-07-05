@@ -218,6 +218,7 @@ class _LoginPageState extends State<LoginPage> {
                                   _isProcessing = false;
                                 });
 
+                                if (!mounted) return;
                                 if (user != null) {
                                   Navigator.of(context).pushAndRemoveUntil(
                                     MaterialPageRoute(

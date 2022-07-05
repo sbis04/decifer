@@ -70,6 +70,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
       });
 
       await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
       Navigator.of(context).pop(Tuple4(subtitles, docId, downloadUrl, []));
 
       return;
@@ -126,6 +127,8 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
     });
 
     await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
 
     Navigator.of(context)
         .pop(Tuple4(subtitles, docId, downloadUrl, confidences));

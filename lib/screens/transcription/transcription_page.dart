@@ -251,7 +251,7 @@ class _TranscriptionPageState extends State<TranscriptionPage> {
         );
       } else {
         final text = isPara
-            ? '\n\n' + subtitles[index].data.substring(2)
+            ? '\n\n${subtitles[index].data.substring(2)}'
             : subtitles[index].data.substring(1);
         if (isFirst) _singleText += text;
 

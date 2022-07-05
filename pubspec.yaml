@@ -48,6 +48,7 @@ dependencies:
   record: ^3.0.3
   tuple: ^2.0.0
   printing: ^5.7.4
+  pdf: ^3.8.1
 
 dev_dependencies:
   flutter_test:
@@ -58,7 +59,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
   flutter_launcher_icons: ^0.9.2
 
 flutter_icons:

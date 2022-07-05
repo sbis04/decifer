@@ -301,10 +301,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                     _isProcessing = false;
                                   });
 
+                                  if (!mounted) return;
                                   if (user != null) {
                                     Navigator.of(context).pushAndRemoveUntil(
                                       MaterialPageRoute(
-                                        builder: (context) => const DashboardPage(),
+                                        builder: (context) =>
+                                            const DashboardPage(),
                                       ),
                                       (route) => false,
                                     );
